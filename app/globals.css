@@ -1,26 +1,136 @@
-@import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --font-display: 'Syne', sans-serif;
+  --font-body: 'DM Sans', sans-serif;
+  --ink: #0A0A0F;
+  --ink-2: #16161F;
+  --ink-3: #1E1E2A;
+  --surface: #F5F4F0;
+  --surface-2: #ECEAE4;
+  --gold: #C9A84C;
+  --gold-light: #E8C97A;
+  --jade: #2ECC94;
+  --crimson: #E8445A;
+  --mist: rgba(255,255,255,0.06);
+  --mist-2: rgba(255,255,255,0.10);
+  --border: rgba(255,255,255,0.08);
+  --border-light: rgba(0,0,0,0.08);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+* { box-sizing: border-box; margin: 0; padding: 0; }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  scroll-behavior: smooth;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-body);
+  background: var(--ink);
+  color: #fff;
 }
+
+/* Animations */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes shimmer {
+  0%   { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+@keyframes slideRight {
+  from { transform: translateX(-12px); opacity: 0; }
+  to   { transform: translateX(0);     opacity: 1; }
+}
+
+.animate-fade-up    { animation: fadeUp 0.5s ease forwards; }
+.animate-fade-in    { animation: fadeIn 0.4s ease forwards; }
+.animate-slide-right{ animation: slideRight 0.4s ease forwards; }
+
+.stagger-1 { animation-delay: 0.05s; opacity: 0; }
+.stagger-2 { animation-delay: 0.10s; opacity: 0; }
+.stagger-3 { animation-delay: 0.15s; opacity: 0; }
+.stagger-4 { animation-delay: 0.20s; opacity: 0; }
+.stagger-5 { animation-delay: 0.25s; opacity: 0; }
+.stagger-6 { animation-delay: 0.30s; opacity: 0; }
+
+/* Gold shimmer text */
+.text-shimmer {
+  background: linear-gradient(90deg, #C9A84C 0%, #F0D080 40%, #C9A84C 60%, #E8C97A 100%);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: shimmer 4s linear infinite;
+}
+
+/* Glass card */
+.glass {
+  background: var(--mist);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--border);
+}
+
+/* Noise overlay */
+.noise::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar       { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--ink-2); }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.25); }
+
+/* Focus */
+*:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; border-radius: 4px; }
+
+/* Selection */
+::selection { background: rgba(201,168,76,0.25); color: #fff; }
+
+/* Dark input */
+.input-base {
+  width: 100%;
+  padding: 12px 16px;
+  background: var(--mist);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: #fff;
+  font-family: var(--font-body);
+  font-size: 14px;
+  transition: border-color 0.2s, background 0.2s;
+}
+.input-base::placeholder { color: rgba(255,255,255,0.25); }
+.input-base:focus { outline: none; border-color: var(--gold); background: rgba(255,255,255,0.08); }
+
+/* Light input (careers page) */
+.input-light {
+  background: #fff;
+  border: 1.5px solid #E5E3DC;
+  color: #0A0A0F;
+  font-family: var(--font-body);
+  font-size: 14px;
+  padding: 11px 16px;
+  border-radius: 10px;
+  width: 100%;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.input-light::placeholder { color: #999; }
+.input-light:focus { outline: none; border-color: #0A0A0F; box-shadow: 0 0 0 3px rgba(10,10,15,0.08); }
