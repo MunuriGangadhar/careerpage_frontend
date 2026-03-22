@@ -192,11 +192,11 @@ export default function CareersPage({ company, companySlug }: Props) {
 
             {/* Search */}
             <div className="relative mb-3">
-              <svg className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none"
+              {/* <svg className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none"
                 style={{ color: 'rgba(0,0,0,0.3)' }}
                 width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
-              </svg>
+              </svg> */}
               <input
                 type="text"
                 placeholder="Search by job title…"

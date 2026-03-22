@@ -125,13 +125,13 @@ export default function LoginPage() {
           )}
         </div>
 
-        <div className="mt-5 glass rounded-xl p-4">
+        {/* <div className="mt-5 glass rounded-xl p-4">
           <p className="text-xs text-center mb-2" style={{ color: 'rgba(255,255,255,0.3)' }}>Demo credentials</p>
           <div className="space-y-1 text-center">
             <p className="text-xs font-mono" style={{ color: 'rgba(255,255,255,0.45)' }}>recruiter@techcorp.com / password123</p>
             <p className="text-xs font-mono" style={{ color: 'rgba(255,255,255,0.45)' }}>recruiter@growfast.com / password123</p>
           </div>
-        </div>
+        </div> */}
       </div>
     </div>
   );
