@@ -2,27 +2,25 @@ import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 
-interface Props { params: { companySlug: string; jobSlug: string } }
+// Next.js 15+: params is a Promise and must be awaited
+interface Props { params: Promise<{ companySlug: string; jobSlug: string }> }
 
-// Public job endpoint — active jobs only, no isPublished check on job itself
 async function getJob(companySlug: string, jobSlug: string) {
   try {
     const res = await fetch(
       `${process.env.NEXT_PUBLIC_API_URL}/jobs/${companySlug}/${jobSlug}`,
-      { next: { revalidate: 60 } }
+      { cache: 'no-store' }
     );
     if (!res.ok) return null;
     return (await res.json()).data;
   } catch { return null; }
 }
 
-// Uses /theme endpoint — works even if company is NOT published yet
-// This fixes the 404 on apply page for new companies before they publish
 async function getCompany(slug: string) {
   try {
     const res = await fetch(
       `${process.env.NEXT_PUBLIC_API_URL}/companies/${slug}/theme`,
-      { next: { revalidate: 300 } }
+      { cache: 'no-store' }
     );
     if (!res.ok) return null;
     return (await res.json()).data;
@@ -30,10 +28,11 @@ async function getCompany(slug: string) {
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const job = await getJob(params.companySlug, params.jobSlug);
+  const { companySlug, jobSlug } = await params;
+  const job = await getJob(companySlug, jobSlug);
   if (!job) return { title: 'Job Not Found' };
   return {
-    title: `${job.title} at ${params.companySlug}`,
+    title: `${job.title} at ${companySlug}`,
     description: `${job.title} · ${job.location} · ${job.workPolicy} · ${job.employmentType}`,
   };
 }
@@ -58,13 +57,18 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 }
 
 export default async function JobDetailPage({ params }: Props) {
-  const job = await getJob(params.companySlug, params.jobSlug);
+  const { companySlug, jobSlug } = await params;
+
+  const [job, company] = await Promise.all([
+    getJob(companySlug, jobSlug),
+    getCompany(companySlug),
+  ]);
+
   if (!job) notFound();
 
-  const company   = await getCompany(params.companySlug);
   const primary   = company?.brandTheme?.primaryColor   || '#0F172A';
   const secondary = company?.brandTheme?.secondaryColor || '#6366F1';
-  const applyUrl  = `/${params.companySlug}/careers/${params.jobSlug}/apply`;
+  const applyUrl  = `/apply/${companySlug}/${jobSlug}`;
 
   const jsonLd = {
     '@context': 'https://schema.org',
@@ -76,7 +80,7 @@ export default async function JobDetailPage({ params }: Props) {
     employmentType: job.employmentType.toUpperCase().replace(' ', '_'),
     hiringOrganization: {
       '@type': 'Organization',
-      name: company?.name || params.companySlug,
+      name: company?.name || companySlug,
       logo: company?.logoUrl,
     },
     baseSalary: job.salaryRange ? {
@@ -89,19 +93,16 @@ export default async function JobDetailPage({ params }: Props) {
     <>
       <script type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
-
       <div style={{ background: '#FAFAF8', minHeight: '100vh', fontFamily: 'DM Sans, sans-serif' }}>
 
-        {/* Header bar */}
         <div style={{ background: primary, padding: '16px 24px' }}>
           <div className="max-w-3xl mx-auto flex items-center justify-between">
-            <Link href={`/${params.companySlug}/careers`}
+            <Link href={`/${companySlug}/careers`}
               className="text-sm font-medium text-white/70 hover:text-white transition-colors">
               ← Back to careers
             </Link>
             {company?.name && (
-              <span className="text-sm text-white/60"
-                style={{ fontFamily: 'Syne, sans-serif' }}>
+              <span className="text-sm text-white/60" style={{ fontFamily: 'Syne, sans-serif' }}>
                 {company.name}
               </span>
             )}
@@ -109,8 +110,6 @@ export default async function JobDetailPage({ params }: Props) {
         </div>
 
         <div className="max-w-3xl mx-auto px-4 md:px-6 py-12">
-
-          {/* Job card */}
           <div className="bg-white rounded-3xl p-8 md:p-10 mb-6"
             style={{ border: '1.5px solid rgba(0,0,0,0.06)', boxShadow: '0 8px 48px rgba(0,0,0,0.08)' }}>
 
@@ -119,7 +118,6 @@ export default async function JobDetailPage({ params }: Props) {
               {job.title}
             </h1>
 
-            {/* Tags row 1 */}
             <div className="flex flex-wrap gap-2.5 mb-4">
               <span className="px-3 py-1.5 rounded-full text-xs font-semibold text-white"
                 style={{ background: policyColors[job.workPolicy] || secondary }}>
@@ -141,7 +139,6 @@ export default async function JobDetailPage({ params }: Props) {
               )}
             </div>
 
-            {/* Tags row 2 */}
             <div className="flex flex-wrap gap-2 pb-6 mb-6"
               style={{ borderBottom: '1.5px solid rgba(0,0,0,0.07)' }}>
               <span className="px-3 py-1 rounded-xl text-xs font-semibold"
@@ -165,8 +162,7 @@ export default async function JobDetailPage({ params }: Props) {
 
             {job.description && (
               <Section title="About this role">
-                <p className="text-sm leading-relaxed"
-                  style={{ color: 'rgba(0,0,0,0.65)' }}>
+                <p className="text-sm leading-relaxed" style={{ color: 'rgba(0,0,0,0.65)' }}>
                   {job.description}
                 </p>
               </Section>
@@ -216,9 +212,7 @@ export default async function JobDetailPage({ params }: Props) {
               </Section>
             )}
 
-            {/* Apply button — opens in new tab */}
-            <div className="mt-8 pt-8"
-              style={{ borderTop: '1.5px solid rgba(0,0,0,0.07)' }}>
+            <div className="mt-8 pt-8" style={{ borderTop: '1.5px solid rgba(0,0,0,0.07)' }}>
               <Link
                 href={applyUrl}
                 target="_blank"
@@ -234,10 +228,10 @@ export default async function JobDetailPage({ params }: Props) {
             </div>
           </div>
 
-          <Link href={`/${params.companySlug}/careers`}
+          <Link href={`/${companySlug}/careers`}
             className="flex items-center gap-2 text-sm font-medium hover:opacity-70 transition-opacity"
             style={{ color: primary }}>
-            ← All open positions at {company?.name || params.companySlug}
+            ← All open positions at {company?.name || companySlug}
           </Link>
         </div>
       </div>
