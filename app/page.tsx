@@ -156,7 +156,7 @@ export default function HomePage() {
       {/* Footer */}
       <footer className="relative z-10 border-t py-8 text-center text-sm text-white/25"
         style={{ borderColor: 'var(--border)' }}>
-        <p>CareerForge · Built for the assignment · 2025</p>
+        <p>CareerForge — Developed by WhiteCarrot, 2026</p>
       </footer>
     </main>
   );
